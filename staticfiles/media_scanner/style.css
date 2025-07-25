@@ -1,0 +1,140 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #111;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.upload-box {
+  background-color: #1f1f1f;
+  padding: 24px;
+  border-radius: 12px;
+  width: 400px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.upload-header {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.upload-area {
+  border: 2px dashed #555;
+  border-radius: 10px;
+  text-align: center;
+  padding: 40px 20px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-area:hover {
+  background-color: #2a2a2a;
+  border-color: #777;
+}
+
+.upload-area.dragover {
+  background-color: #2a2a2a;
+}
+
+.upload-area p {
+  color: #aaa;
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
+.upload-area p:last-child {
+  font-size: 12px;
+  color: #666;
+}
+
+#file-input {
+  display: none;
+}
+
+.file-info {
+  background-color: #2a2a2a;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  transition: background-color 0.3s;
+}
+
+.file-info:hover {
+  background-color: #333;
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-name {
+  color: #fff;
+  font-size: 14px;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #888;
+}
+
+.file-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.file-actions button {
+  background-color: #333;
+  border: none;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.file-actions button:hover {
+  background-color: #444;
+}
+
+.remove-task {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.remove-task:hover {
+  background-color: #444;
+}
+
+.thumb {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}

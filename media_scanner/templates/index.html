@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload Files UI</title>
+  <link rel="stylesheet" href="{% static 'media_scanner/style.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<body>
+
+
+
+<div class="header-area-wrapper">
+<!-- Upload Header -->
+<h3 class="upload-header">Upload Files</h3>
+
+<!-- Upload Area -->
+<div id="upload-area" class="upload-area">
+  <input type="file" id="file-input" hidden />
+  <div style="font-size: 32px;">➕</div>
+  <p>Drag & drop or click to choose files</p>
+  <p>Max file size: 10 MB</p>
+</div>
+  </div>
+
+<!-- Uploaded Files Box -->
+<div id="upload-box" class="upload-box" style="display: none;">
+  <div id="file-list-wrapper">
+    <div id="file-list" class="file-list"></div>
+  </div>
+
+  <button id="clear-button" class="remove-task" onclick="clearFiles()" title="Clear all uploaded files">
+    🗑️ Remove all
+  </button>
+</div>
+
+  <script src="{% static 'media_scanner/script.js' %}"></script>
+</body>
+</html>

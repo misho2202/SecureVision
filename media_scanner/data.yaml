@@ -1,0 +1,9 @@
+# midv2019.yaml
+path: midv2019_yolo_ready_v2        # your dataset root
+train: images/train                 # relative to `path`
+val:   images/val
+
+nc: 2                               # number of classes
+names:
+  0: id_card                       # class name(s)
+  1: credit_card

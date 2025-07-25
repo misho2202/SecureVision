@@ -1,0 +1,169 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #111;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* .upload-box {
+  background-color: #1f1f1f;
+  padding: 24px;
+  border-radius: 12px;
+ 
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+} */
+
+#file-list-wrapper {
+  max-height: 80vh; /* 70% of the viewport height */
+  overflow-y: auto;
+  width: 100%;      /* make it scale to parent container */
+  padding: 18px;
+  box-sizing: border-box;
+}
+@media (max-width: 600px) {
+  #file-list-wrapper {
+    max-height: 50vh;
+    padding: 12px;
+  }
+}
+
+#upload-box {
+  max-height: 100%;       /* adjust height as needed */
+  width: 600px;
+  background-color: #1f1f1f;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  scrollbar-color: grey #1f1f1f
+  
+}
+
+.upload-header {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  text-align: center
+}
+.header-area-wrapper{
+  margin-right: 100px;
+}
+.upload-area {
+  border: 2px dashed #555;
+  border-radius: 10px;
+  text-align: center;
+  padding: 40px 20px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+.upload-area:hover {
+  background-color: #2a2a2a;
+  border-color: #777;
+}
+
+.upload-area.dragover {
+  background-color: #2a2a2a;
+}
+
+.upload-area p {
+  color: #aaa;
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
+.upload-area p:last-child {
+  font-size: 12px;
+  color: #666;
+}
+
+#file-input {
+  display: none;
+}
+
+.file-info {
+  background-color: #2a2a2a;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  transition: background-color 0.3s;
+}
+
+.file-info:hover {
+  background-color: #333;
+}
+
+.file-details {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+.file-name {
+  color: #fff;
+  font-size: 14px;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #888;
+}
+
+.file-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.file-actions button {
+  background-color: #333;
+  border: none;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.file-actions button:hover {
+  background-color: #444;
+}
+
+.remove-task {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  
+}
+
+.remove-task:hover {
+  background-color: #444;
+}
+
+.thumb.preview-big {
+  width: 150px;
+  height: auto;
+  border-radius: 6px;
+  margin-right: 10px;
+}
