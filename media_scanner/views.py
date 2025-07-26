@@ -1,18 +1,102 @@
-# import cv2
 from django.shortcuts import render
-from django.http import JsonResponse
-from django.core.files.storage import default_storage
-# import pytesseract
-from PIL import Image, ImageEnhance, ImageFilter
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+import cv2
+from django.http import StreamingHttpResponse
+from django.views.decorators import gzip
 
 import os
 import re
 
+from ai_processor.yolo_processor import process_image_file, generate_webcam_stream
 from .models import UploadedImage
+
+# Global camera instance
+camera = None
+
+# @csrf_exempt
+# def upload_and_process(request):
+#     """Handle uploaded images & process with YOLO before saving."""
+#     if request.method == "POST":
+#         files = request.FILES.getlist("images")
+#         results = []
+#
+#         for f in files:
+#             # Save temporarily
+#             filename = default_storage.save(f.name, ContentFile(f.read()))
+#             file_path = default_storage.path(filename)
+#
+#             # Process image & save processed output
+#             output_filename = f"processed_{os.path.basename(filename)}"
+#             output_path = default_storage.path(output_filename)
+#
+#             try:
+#                 process_image_file(file_path, output_path)
+#                 results.append({
+#                     "filename": f.name,
+#                     "stored": True,
+#                     "url": default_storage.url(output_filename),
+#                 })
+#             except Exception as e:
+#                 results.append({"filename": f.name, "stored": False, "error": str(e)})
+#
+#         return JsonResponse({"results": results})
+#
+#     return JsonResponse({"error": "Only POST allowed"}, status=405)
+#
+#
+# def livestream_feed(request):
+#     """Stream processed webcam frames with YOLO in real-time."""
+#     return StreamingHttpResponse(
+#         generate_webcam_stream(),
+#         content_type="multipart/x-mixed-replace; boundary=frame"
+#     )
+
+
+@gzip.gzip_page
+@csrf_exempt
+def livestream_view(request):
+    global camera
+
+    if camera is None or not camera.isOpened():
+        camera = cv2.VideoCapture(0)  # open the webcam
+
+    def generate_frames():
+        while True:
+            if camera is None or not camera.isOpened():
+                break
+
+            success, frame = camera.read()
+            if not success:
+                break
+
+            _, jpeg = cv2.imencode('.jpg', frame)
+            frame_bytes = jpeg.tobytes()
+
+            yield (
+                b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n\r\n'
+            )
+
+    return StreamingHttpResponse(
+        generate_frames(),
+        content_type='multipart/x-mixed-replace; boundary=frame'
+    )
+
+
+@csrf_exempt
+def disconnect_livestream(request):
+    """API to stop the webcam"""
+    global camera
+
+    if camera and camera.isOpened():
+        camera.release()
+        camera = None
+        return JsonResponse({"status": "disconnected"})
+    else:
+        return JsonResponse({"status": "already_closed"})
 
 
 def index(request):
@@ -21,7 +105,6 @@ def index(request):
 
 @csrf_exempt
 def upload(request):
-    print('hasav')
     if request.method == 'POST':
 
         uploaded_files = request.FILES.getlist('images')

@@ -1,7 +1,8 @@
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, Video, ArrowRight, Sparkles } from "lucide-react";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
+import LivestreamComponent from "./LivestreamComponent";
 
 
 const StartSection = () => {
@@ -12,63 +13,114 @@ const StartSection = () => {
   };
 
   function getCSRFToken() {
-  let name = 'csrftoken';
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.startsWith(name + '=')) {
-        cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
-        break;
+    let name = "csrftoken";
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + "=")) {
+          cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+          break;
+        }
       }
     }
+    return cookieValue;
   }
-  return cookieValue;
-}
 
-  const handleFileChange = (event) => {
-  const files = event.target.files;
-  if (!files || files.length === 0) return;
+  const handleFileChange = async (event) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-  for (const file of files) {
-    const formData = new FormData();
-    formData.append('images', file); // change field name if your API uses something else
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("images", file); // change if your API uses another name
 
-    fetch('http://localhost:8000/upload/', {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': getCSRFToken(), // ensure this function is defined
-      },
-      body: formData
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data?.stored || data?.success) {
-          Swal.fire({
-            toast: true,
-            icon: 'success',
-            title: `${file.name} uploaded`,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 2000
-          });
-        } else {
-          Swal.fire('Upload failed', `${file.name} could not be uploaded.`, 'error');
+      try {
+        const res = await fetch("http://localhost:8000/upload/", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCSRFToken(), // remove if using @csrf_exempt
+          },
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        for (const result of data.results || []) {
+          if (result.stored) {
+            await Swal.fire({
+              toast: true,
+              icon: "success",
+              title: `${result.filename} uploaded`,
+              position: "top-end",
+              showConfirmButton: false,
+              timer: 2000,
+              timerProgressBar: true,
+            });
+          } else {
+            await Swal.fire(
+              "Upload failed",
+              `${result.filename} could not be uploaded.`,
+              "error"
+            );
+          }
         }
-      })
-      .catch(err => {
-        console.error('Upload error:', err);
-        Swal.fire('Upload failed', `${file.name} could not be uploaded.`, 'error');
+      } catch (err) {
+        console.error("Upload error:", err);
+        await Swal.fire(
+          "Upload failed",
+          `${file.name} could not be uploaded.`,
+          "error"
+        );
+      }
+    }
+    // ✅ Reset input so selecting the same file again triggers change
+    event.target.value = "";
+  };
+
+  const handleLivestreamConnect = async () => {
+    try {
+      // Ask for confirmation before connecting
+      const confirm = await Swal.fire({
+        title: "Connect to Livestream?",
+        text: "Do you want to start the livestream connection now?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Yes, connect",
+        cancelButtonText: "Cancel",
       });
-  }
-};
 
+      if (!confirm.isConfirmed) return;
 
-  const handleLivestreamConnect = () => {
-      console.log("Connect Livestream clicked");
-      // TODO: Open livestream setup modal or start auth/connection process
-    };
+      // Simulate API call (replace with real one)
+      await Swal.fire({
+        title: "Connecting...",
+        text: "Please wait while we establish the connection.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // ✅ Simulated delay (replace with your fetch to backend)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Close loading and show success
+      Swal.fire({
+        icon: "success",
+        title: "Connected!",
+        text: "The livestream is now active.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      // Here you can also update state, e.g., setIsConnected(true)
+    } catch (err) {
+      console.error("Livestream connection error:", err);
+      Swal.fire("Error", "Failed to connect to livestream.", "error");
+    }
+  };
 
   return (
     <section id="start" className="py-20">
@@ -81,7 +133,8 @@ const StartSection = () => {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            Choose how you want to secure your content. Our AI-powered protection works seamlessly for both static media and live streams.
+            Choose how you want to secure your content. Our AI-powered
+            protection works seamlessly for both static media and live streams.
           </p>
         </div>
 
@@ -96,7 +149,9 @@ const StartSection = () => {
                 Upload Media
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                Upload your photos, videos, or documents and let our AI automatically detect and blur sensitive information before you share.
+                Upload your photos, videos, or documents and let our AI
+                automatically detect and blur sensitive information before you
+                share.
               </p>
             </div>
 
@@ -144,7 +199,9 @@ const StartSection = () => {
                 Connect to Livestream
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                Protect your live streams in real-time. Our AI monitors your stream and automatically protects sensitive content as you broadcast.
+                Protect your live streams in real-time. Our AI monitors your
+                stream and automatically protects sensitive content as you
+                broadcast.
               </p>
             </div>
 
@@ -163,14 +220,8 @@ const StartSection = () => {
               </div>
             </div>
 
-            <Button
-              variant="secondary"
-              className="w-full group"
-              onClick={handleLivestreamConnect}
-            >
-              Connect Livestream
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <LivestreamComponent />
+
           </div>
         </div>
 
@@ -181,8 +232,9 @@ const StartSection = () => {
               🔒 Your Privacy, Always Protected
             </h4>
             <p className="text-muted-foreground">
-              All processing happens securely and privately. We never store your media or access your personal information.
-              Your content remains yours, always.
+              All processing happens securely and privately. We never store your
+              media or access your personal information. Your content remains
+              yours, always.
             </p>
           </div>
         </div>
