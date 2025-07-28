@@ -1,22 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Swal from "sweetalert2";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles, Video } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 
 const LivestreamComponent = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const socketRef = useRef<WebSocket | null>(null);
 
   const handleLivestreamConnect = async () => {
     try {
-      // ✅ Ask for confirmation before starting
       const confirm = await Swal.fire({
         title: "Start Livestream?",
         text: "Do you want to start your webcam livestream now?",
@@ -26,24 +28,45 @@ const LivestreamComponent = () => {
         cancelButtonText: "Cancel",
       });
 
-      if (!confirm.isConfirmed) return; // Cancel if user pressed cancel
+      if (!confirm.isConfirmed) return;
 
-      // ✅ Start the livestream
-      const res = await fetch("http://localhost:8000/livestream/", {
-        method: "GET",
-      });
-      if (!res.ok) throw new Error("Failed to start stream");
-
+      // ✅ Show processing modal
       Swal.fire({
-        icon: "success",
-        title: "Connected!",
-        text: "Livestream started successfully.",
-        timer: 1200,
-        showConfirmButton: false,
+        title: "Connecting...",
+        text: "Establishing livestream, please wait...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
       });
 
-      setIsConnected(true);
-      setIsDialogOpen(true); // Open the popup
+      socketRef.current = new WebSocket("ws://localhost:8000/ws/livestream/");
+      socketRef.current.onmessage = (event) => {
+        const img = new Image();
+        img.src = "data:image/jpeg;base64," + event.data;
+        img.onload = () => {
+          const ctx = canvasRef.current?.getContext("2d");
+          if (!ctx || !canvasRef.current) return;
+          canvasRef.current.width = img.width;
+          canvasRef.current.height = img.height;
+          ctx.drawImage(img, 0, 0);
+        };
+      };
+
+      socketRef.current.onopen = () => {
+        Swal.fire({
+          icon: "success",
+          title: "Connected!",
+          text: "Livestream started successfully.",
+          timer: 1200,
+          showConfirmButton: false,
+        });
+        setIsConnected(true);
+        setIsDialogOpen(true);
+      };
+
+      socketRef.current.onclose = () => {
+        setIsConnected(false);
+        setIsDialogOpen(false);
+      };
     } catch (err) {
       console.error("Livestream connection error:", err);
       Swal.fire("Error", "Could not start the livestream.", "error");
@@ -52,18 +75,19 @@ const LivestreamComponent = () => {
 
   const handleLivestreamDisconnect = async () => {
     try {
-      const res = await fetch("http://localhost:8000/livestream/disconnect/", {
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
+
+      await fetch("http://localhost:8000/livestream/disconnect/", {
         method: "POST",
       });
-      const data = await res.json();
 
       Swal.fire({
         icon: "info",
         title: "Disconnected",
-        text:
-          data.status === "disconnected"
-            ? "Livestream stopped."
-            : "It was already closed.",
+        text: "Livestream stopped.",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -76,7 +100,6 @@ const LivestreamComponent = () => {
     }
   };
 
-  // ✅ Automatically disconnect if the dialog is closed manually or by outside click
   const handleDialogChange = (open: boolean) => {
     if (!open && isConnected) {
       handleLivestreamDisconnect();
@@ -86,32 +109,68 @@ const LivestreamComponent = () => {
 
   return (
     <>
-      {/* Button in the main page */}
-      <Button
-        variant="secondary"
-        className="w-full group"
-        onClick={handleLivestreamConnect}
-      >
-        Connect Livestream
-        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-      </Button>
+      {/* ✅ Card layout, same as UploadMedia */}
+      <div className="group bg-card rounded-3xl p-8 shadow-soft transition-spring hover:shadow-medium hover:scale-105">
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 mx-auto rounded-2xl gradient-secondary flex items-center justify-center mb-6 group-hover:shadow-glow transition-spring">
+            <Video className="w-10 h-10 text-secondary-foreground" />
+          </div>
+          <h3 className="text-2xl font-bold text-card-foreground mb-4">
+            Connect to Livestream
+          </h3>
+          <p className="text-muted-foreground leading-relaxed">
+            Protect your live streams in real-time. Our AI monitors your stream
+            and automatically protects sensitive content.
+          </p>
+        </div>
 
-      {/* Popup (Dialog) */}
+        <div className="space-y-4 mb-8">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <Sparkles className="w-4 h-4 text-secondary" />
+            <span>Real-time privacy protection during live streams</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <Sparkles className="w-4 h-4 text-secondary" />
+            <span>Compatible with major streaming platforms</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <Sparkles className="w-4 h-4 text-secondary" />
+            <span>Instant alerts for potential privacy risks</span>
+          </div>
+        </div>
+
+        <Button
+          variant="secondary"
+          className="w-full group"
+          onClick={handleLivestreamConnect}
+        >
+          Connect Livestream
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+        </Button>
+      </div>
+
+      {/* ✅ Dialog (popup live preview) */}
       <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
-        <DialogContent className="max-w-3xl w-full">
+        <DialogContent
+          className="max-w-3xl w-full"
+          aria-describedby={undefined}
+        >
           <DialogHeader>
             <DialogTitle className="text-lg flex items-center gap-2">
-              📺 Live Camera Feed
+              📺 Live Stream (Blurred for Privacy)
             </DialogTitle>
+            <DialogDescription>
+              The stream is automatically processed to blur sensitive data in
+              real-time.
+            </DialogDescription>
           </DialogHeader>
 
           {isConnected && (
             <div className="space-y-4">
-              <img
-                src="http://localhost:8000/livestream/"
-                alt="Webcam Stream"
+              <canvas
+                ref={canvasRef}
                 className="rounded-lg border w-full"
-              />
+              ></canvas>
             </div>
           )}
 

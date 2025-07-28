@@ -35,6 +35,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 INSTALLED_APPS = [
     'corsheaders',
+    "channels",
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    "livestream",
     'media_scanner'
 ]
 
@@ -73,7 +76,14 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'mediascanner.wsgi.application'
+ASGI_APPLICATION = 'mediascanner.asgi.application'
+
+# Optional but recommended (keep Redis if you want scaling later)
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

@@ -2,8 +2,8 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, Video, ArrowRight, Sparkles } from "lucide-react";
 import Swal from "sweetalert2";
+import UploadMediaComponent from "./UploadMediaComponent";
 import LivestreamComponent from "./LivestreamComponent";
-
 
 const StartSection = () => {
   const fileInputRef = useRef(null);
@@ -140,89 +140,10 @@ const StartSection = () => {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {/* Upload Media */}
-          <div className="group bg-card rounded-3xl p-8 shadow-soft transition-spring hover:shadow-medium hover:scale-105">
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 mx-auto rounded-2xl gradient-primary flex items-center justify-center mb-6 group-hover:shadow-glow transition-spring">
-                <Upload className="w-10 h-10 text-primary-foreground" />
-              </div>
-              <h3 className="text-2xl font-bold text-card-foreground mb-4">
-                Upload Media
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Upload your photos, videos, or documents and let our AI
-                automatically detect and blur sensitive information before you
-                share.
-              </p>
-            </div>
-
-            <div className="space-y-4 mb-8">
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span>Detects personal information, IDs, and private data</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span>Automatic blur and protection features</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span>Supports images, videos, and documents</span>
-              </div>
-            </div>
-
-            <input
-              type="file"
-              multiple
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              accept="image/*,video/*,.pdf"
-            />
-
-            <Button
-              variant="hero"
-              className="w-full group"
-              onClick={handleFileClick}
-            >
-              Upload Media
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
+          <UploadMediaComponent />
 
           {/* Connect to Livestream */}
-          <div className="group bg-card rounded-3xl p-8 shadow-soft transition-spring hover:shadow-medium hover:scale-105">
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 mx-auto rounded-2xl gradient-secondary flex items-center justify-center mb-6 group-hover:shadow-glow transition-spring">
-                <Video className="w-10 h-10 text-secondary-foreground" />
-              </div>
-              <h3 className="text-2xl font-bold text-card-foreground mb-4">
-                Connect to Livestream
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Protect your live streams in real-time. Our AI monitors your
-                stream and automatically protects sensitive content as you
-                broadcast.
-              </p>
-            </div>
-
-            <div className="space-y-4 mb-8">
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Sparkles className="w-4 h-4 text-secondary" />
-                <span>Real-time privacy protection during live streams</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Sparkles className="w-4 h-4 text-secondary" />
-                <span>Compatible with major streaming platforms</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Sparkles className="w-4 h-4 text-secondary" />
-                <span>Instant alerts for potential privacy risks</span>
-              </div>
-            </div>
-
-            <LivestreamComponent />
-
-          </div>
+          <LivestreamComponent />
         </div>
 
         {/* Additional Info */}
