@@ -156,36 +156,36 @@ def upload(request):
 
     return JsonResponse({"error": "Only POST allowed"}, status=400)
 
-
-@gzip.gzip_page
-@csrf_exempt
-def livestream_view(request):
-    global camera
-
-    if camera is None or not camera.isOpened():
-        camera = cv2.VideoCapture(0)  # open the webcam
-
-    def generate_frames():
-        while True:
-            if camera is None or not camera.isOpened():
-                break
-
-            success, frame = camera.read()
-            if not success:
-                break
-
-            _, jpeg = cv2.imencode('.jpg', frame)
-            frame_bytes = jpeg.tobytes()
-
-            yield (
-                b'--frame\r\n'
-                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n\r\n'
-            )
-
-    return StreamingHttpResponse(
-        generate_frames(),
-        content_type='multipart/x-mixed-replace; boundary=frame'
-    )
+#
+# @gzip.gzip_page
+# @csrf_exempt
+# def livestream_view(request):
+#     global camera
+#
+#     if camera is None or not camera.isOpened():
+#         camera = cv2.VideoCapture(0)  # open the webcam
+#
+#     def generate_frames():
+#         while True:
+#             if camera is None or not camera.isOpened():
+#                 break
+#
+#             success, frame = camera.read()
+#             if not success:
+#                 break
+#
+#             _, jpeg = cv2.imencode('.jpg', frame)
+#             frame_bytes = jpeg.tobytes()
+#
+#             yield (
+#                 b'--frame\r\n'
+#                 b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n\r\n'
+#             )
+#
+#     return StreamingHttpResponse(
+#         generate_frames(),
+#         content_type='multipart/x-mixed-replace; boundary=frame'
+#     )
 
 
 @csrf_exempt

@@ -32,7 +32,7 @@ def blur_region(img, x1, y1, x2, y2):
 
 
 def predict_and_process(frame, blur=True):
-    results = model(frame)
+    results = model(frame, stream=True)
     for r in results:
         for box in r.boxes:
             conf = float(box.conf[0])
