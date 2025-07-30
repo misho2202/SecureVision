@@ -22,10 +22,6 @@ Whether it's passports, ID cards, credit cards, license plates, or other identif
   - 🎞 **Video Upload** – Frame-by-frame detection and blurring.
   - 🎥 **Live Webcam** – Real-time detection during video capture.
 
-- **Smart Filtering**:
-  - Select specific object classes for detection.
-  - Adjust the confidence threshold to fine-tune sensitivity.
-
 - **Custom YOLOv11 Models**:
   - Built-in support for YOLOv11 models for high-speed, high-accuracy detection.
 
