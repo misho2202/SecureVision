@@ -1,9 +1,12 @@
+import torch
 from ultralytics import YOLO
 import cv2
 import time
 import glob
 import os
 import datetime
+
+from mediascanner import settings
 
 # ─── CONFIG ─────────────────────────────────────────────────────────────────────
 MODE               = "webcam"  # options: "image", "webcam", "video", "folder"
@@ -19,9 +22,14 @@ CONF_THRESHOLD     = 0.5  # Filter detections below this confidence
 
 
 def load_model(model_path):
-    return YOLO(model_path)
+    # ✅ Check for GPU
+    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"[INFO] Loading YOLO model on: {DEVICE.upper()}")
 
-
+    # ✅ Load model and move to correct device
+    full_model_path = os.path.join(settings.BASE_DIR, model_path)
+    model = YOLO(full_model_path).to(DEVICE)
+    return model
 def blur_region(img, x, y, w, h):
     roi = img[y:y + h, x:x + w]
     blurred_roi = cv2.GaussianBlur(roi, (25, 25), 30)
