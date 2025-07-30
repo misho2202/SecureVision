@@ -137,23 +137,25 @@ const UploadMediaComponent = () => {
           <div className="flex justify-center items-center w-full">
             {blurredMedia.length > 0 && (
               <>
-                {blurredMedia[0].filename.endsWith(".mp4") ? (
+                {blurredMedia[0].filename.endsWith(".webm") || blurredMedia[0].filename.endsWith(".mp4") ? (
                   <video
-                    key={blurredMedia[0].url} // ✅ force re-render when URL changes
+                    key={blurredMedia[0].url}
                     controls
                     className="rounded-lg shadow max-h-[400px] object-contain"
-                    src={`http://localhost:8000${blurredMedia[0].url}?t=${Date.now()}`}
-                  />
+                  >
+                    <source
+                      src={`http://localhost:8000${blurredMedia[0].url}?t=${Date.now()}`}
+                      type={blurredMedia[0].filename.endsWith(".webm") ? "video/webm" : "video/mp4"}
+                    />
+                    Your browser does not support the video tag.
+                  </video>
                 ) : (
                   <img
                     src={`http://localhost:8000${blurredMedia[0].url}`}
                     alt={blurredMedia[0].filename}
                     className="rounded-lg shadow max-h-[400px] object-contain cursor-pointer"
                     onClick={() =>
-                      window.open(
-                        `http://localhost:8000${blurredMedia[0].url}`,
-                        "_blank"
-                      )
+                      window.open(`http://localhost:8000${blurredMedia[0].url}`, "_blank")
                     }
                   />
                 )}

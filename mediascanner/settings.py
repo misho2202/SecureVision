@@ -142,3 +142,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
 ]
+
+import mimetypes
+mimetypes.add_type("video/webm", ".webm", True)
+mimetypes.add_type("video/mp4", ".mp4", True)

@@ -1,3 +1,4 @@
+import subprocess
 from datetime import datetime
 import numpy as np
 import torch
@@ -94,6 +95,45 @@ def run_video_mode(model, input_path, output_path):
     print(f"[✓] Done. Output saved to {output_path}")
 
 
+# Process single video using OpenCV
+def process_video(input_path, output_path, model):
+    cap = cv2.VideoCapture(input_path)
+    if not cap.isOpened():
+        raise FileNotFoundError(f"Video not found: {input_path}")
+
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS) or 25
+
+    # ✅ Use mp4v for better compatibility
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+    print("[INFO] Processing video...")
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        processed = predict_and_process(model, frame.copy(), blur=BLUR_DETECTIONS)
+        out.write(processed)
+
+    cap.release()
+    out.release()
+    print(f"[✓] Done. Output saved to {output_path}")
+
+
+# Optional: convert mp4 to webm
+def convert_to_webm(input_path, output_path):
+    subprocess.run([
+        "ffmpeg", "-y",
+        "-i", input_path,
+        "-c:v", "libvpx-vp9", "-b:v", "1M",
+        "-c:a", "libopus",
+        output_path
+    ])
+    print(f"[✓] Converted to {output_path}")
+
 
 @csrf_exempt
 def upload(request):
@@ -105,18 +145,13 @@ def upload(request):
             file_ext = os.path.splitext(f.name)[1].lower()
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-            # ✅ IMAGES
+            # ✅ IMAGE HANDLING
             if file_ext in [".jpg", ".jpeg", ".png", ".bmp"]:
-                # ✅ Convert uploaded file to OpenCV image
                 file_bytes = f.read()
                 np_arr = np.frombuffer(file_bytes, np.uint8)
                 frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-                # ✅ Process (blur detections)
                 blurred = predict_and_process(model, frame, blur=BLUR_DETECTIONS)
-
-                # ✅ Save only blurred version (no original saved)
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 filename = f"blurred_{timestamp}_{f.name}"
                 blurred_dir = os.path.join(settings.MEDIA_ROOT, "blurred")
                 os.makedirs(blurred_dir, exist_ok=True)
@@ -128,34 +163,35 @@ def upload(request):
                     "url": f"{settings.MEDIA_URL}blurred/{filename}",
                 })
 
-            # ✅ VIDEOS
+            # ✅ VIDEO HANDLING
             elif file_ext in [".mp4", ".mov", ".avi", ".mkv"]:
                 video_dir = os.path.join(settings.MEDIA_ROOT, "blurred")
                 os.makedirs(video_dir, exist_ok=True)
 
                 input_path = os.path.join(video_dir, f"input_{timestamp}_{f.name}")
-                output_path = os.path.join(video_dir, f"blurred_{timestamp}_{f.name}")
+                output_mp4_path = os.path.join(video_dir, f"blurred_{timestamp}.mp4")
+                output_webm_path = os.path.join(video_dir, f"blurred_{timestamp}.webm")
 
-                # Save uploaded video temporarily
                 with open(input_path, "wb") as video_file:
                     for chunk in f.chunks():
                         video_file.write(chunk)
 
-                # Run YOLO video processing
-                run_video_mode(model, input_path, output_path)
+                # Process and convert
+                process_video(input_path, output_mp4_path, model)
+                convert_to_webm(output_mp4_path, output_webm_path)
 
-                # Delete original temp video if not needed
+                # Clean up
                 os.remove(input_path)
+                os.remove(output_mp4_path)
 
                 results.append({
-                    "filename": os.path.basename(output_path),
-                    "url": f"{settings.MEDIA_URL}blurred/{os.path.basename(output_path)}",
+                    "filename": os.path.basename(output_webm_path),
+                    "url": f"{settings.MEDIA_URL}blurred/{os.path.basename(output_webm_path)}",
                 })
 
         return JsonResponse({"results": results})
 
     return JsonResponse({"error": "Only POST allowed"}, status=400)
-
 #
 # @gzip.gzip_page
 # @csrf_exempt
