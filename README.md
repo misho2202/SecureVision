@@ -110,17 +110,6 @@ SecureVision is perfect for:
 
 ---
 
-## ⚖️ License
-
-This project is licensed under the terms of the MIT License.
-
----
-
-Made with ❤️ by Crazy Hackers
-
-
----
-
 ## 🌐 Running the Frontend
 
 If your project has a separate frontend (e.g., built with React or another framework), follow these steps:
@@ -132,3 +121,14 @@ npm run dev            # Start the development server
 ```
 
 > 📝 Make sure Node.js and npm are installed. You can download them from [https://nodejs.org](https://nodejs.org)
+
+---
+Made with ❤️ by Crazy Hackers
+
+---
+
+## ⚖️ License
+
+This project is licensed under the terms of the MIT License.
+
+---
