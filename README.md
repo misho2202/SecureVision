@@ -3,11 +3,11 @@
 
 **Real-Time Sensitive Data Detection & Blurring Using YOLOv11**
 
-[![Try it Live](https://img.shields.io/badge/TRY%20IT-LIVE-green?style=for-the-badge&logo=streamlit)](https://github.com/misho2202/SecureVision)
+[![Try it Live](https://img.shields.io/badge/TRY%20IT-LIVE-green?style=for-the-badge)](https://github.com/misho2202/SecureVision)
 
 SecureVision is an advanced AI-powered object detection app designed to **identify and blur sensitive personal data** from images, videos, and live webcam streams — **before it ever reaches the internet**.
 
-Whether it's passports, ID cards, credit cards, license plates, or other identifying information, SecureVision detects and masks them in real time using the power of **YOLOv11** and an intuitive **Streamlit** interface.
+Whether it's passports, ID cards, credit cards, license plates, or other identifying information, SecureVision detects and masks them in real time using the power of **YOLOv11**.
 
 ---
 
