@@ -5,8 +5,6 @@ import torch
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import cv2
-from django.http import StreamingHttpResponse
-from django.views.decorators import gzip
 import os
 
 from ultralytics import YOLO
