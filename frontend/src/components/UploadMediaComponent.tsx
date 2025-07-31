@@ -25,6 +25,20 @@ const UploadMediaComponent = () => {
     fileInputRef.current?.click();
   };
 
+  const deleteBlurredFile = async (filename: string) => {
+    try {
+      await fetch("http://localhost:8000/delete-file/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ filename }),
+      });
+    } catch (err) {
+      console.error("Failed to delete file:", err);
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
 
@@ -67,7 +81,6 @@ const UploadMediaComponent = () => {
       console.error("Upload error:", err);
       Swal.fire("Error", "Failed to upload or process files.", "error");
     } finally {
-      // ✅ Reset input so selecting the same file again works
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -125,7 +138,16 @@ const UploadMediaComponent = () => {
       </div>
 
       {/* Modal to Show Blurred Media */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          if (!open && blurredMedia.length > 0) {
+            deleteBlurredFile(blurredMedia[0].filename);
+            setBlurredMedia([]);
+          }
+          setIsModalOpen(open);
+        }}
+      >
         <DialogContent className="max-w-4xl w-full flex flex-col items-center">
           <DialogHeader className="w-full text-center">
             <DialogTitle>Blurred Media Preview</DialogTitle>
@@ -137,7 +159,8 @@ const UploadMediaComponent = () => {
           <div className="flex justify-center items-center w-full">
             {blurredMedia.length > 0 && (
               <>
-                {blurredMedia[0].filename.endsWith(".webm") || blurredMedia[0].filename.endsWith(".mp4") ? (
+                {blurredMedia[0].filename.endsWith(".webm") ||
+                blurredMedia[0].filename.endsWith(".mp4") ? (
                   <video
                     key={blurredMedia[0].url}
                     controls
@@ -145,7 +168,11 @@ const UploadMediaComponent = () => {
                   >
                     <source
                       src={`http://localhost:8000${blurredMedia[0].url}?t=${Date.now()}`}
-                      type={blurredMedia[0].filename.endsWith(".webm") ? "video/webm" : "video/mp4"}
+                      type={
+                        blurredMedia[0].filename.endsWith(".webm")
+                          ? "video/webm"
+                          : "video/mp4"
+                      }
                     />
                     Your browser does not support the video tag.
                   </video>
@@ -155,7 +182,10 @@ const UploadMediaComponent = () => {
                     alt={blurredMedia[0].filename}
                     className="rounded-lg shadow max-h-[400px] object-contain cursor-pointer"
                     onClick={() =>
-                      window.open(`http://localhost:8000${blurredMedia[0].url}`, "_blank")
+                      window.open(
+                        `http://localhost:8000${blurredMedia[0].url}`,
+                        "_blank"
+                      )
                     }
                   />
                 )}
@@ -179,9 +209,12 @@ const UploadMediaComponent = () => {
                   document.body.appendChild(link);
                   link.click();
                   document.body.removeChild(link);
-
-                  // Optional: clean up URL object after download
                   window.URL.revokeObjectURL(link.href);
+
+                  // ✅ Delete after download
+                  deleteBlurredFile(blurredMedia[0].filename);
+                  setBlurredMedia([]);
+                  setIsModalOpen(false);
                 } catch (err) {
                   console.error("Download failed:", err);
                 }
@@ -190,7 +223,14 @@ const UploadMediaComponent = () => {
               Download
             </Button>
 
-            <Button variant="destructive" onClick={() => setIsModalOpen(false)}>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                deleteBlurredFile(blurredMedia[0].filename);
+                setBlurredMedia([]);
+                setIsModalOpen(false);
+              }}
+            >
               Close
             </Button>
           </DialogFooter>
