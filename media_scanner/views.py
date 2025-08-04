@@ -22,6 +22,7 @@ print(f"[INFO] Loading YOLO model on: {DEVICE.upper()}")
 model_path = os.path.join(settings.BASE_DIR, "best.pt")
 model = YOLO(model_path).to(DEVICE)
 
+
 CONF_THRESHOLD = 0.5
 BLUR_DETECTIONS = True
 
@@ -69,7 +70,7 @@ def run_video_mode(model, input_path, output_path):
     if fps == 0:  # fallback to safe fps
         fps = 25
 
-    # ✅ Use H.264 if supported
+    # Use H.264 if supported
     out = cv2.VideoWriter(
         output_path,
         cv2.VideoWriter_fourcc(*'avc1'),
@@ -203,6 +204,7 @@ def disconnect_livestream(request):
     else:
         return JsonResponse({"status": "already_closed"})
 
+
 @csrf_exempt
 def delete_file(request):
     if request.method == "POST":
@@ -225,3 +227,4 @@ def delete_file(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Only POST allowed"}, status=400)
+
