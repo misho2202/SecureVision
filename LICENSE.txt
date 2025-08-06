@@ -1,0 +1,15 @@
+Copyright © 2025 Crazy Hackers. All rights reserved.
+
+This software and associated files (the “Software”) are the intellectual property of the author(s)
+and are provided for evaluation purposes only.
+
+You may:
+- View, test, and evaluate the Software for non-commercial and educational use only.
+
+You may not:
+- Copy, modify, distribute, sublicense, or use the Software for commercial purposes.
+- Use any part of the Software in another product or service.
+
+No warranty is provided. Use at your own risk.
+
+For commercial licensing, please contact: monikasimonyan814@gmail.com
