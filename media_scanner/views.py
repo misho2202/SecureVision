@@ -22,7 +22,6 @@ print(f"[INFO] Loading YOLO model on: {DEVICE.upper()}")
 model_path = os.path.join(settings.BASE_DIR, "best.pt")
 model = YOLO(model_path).to(DEVICE)
 
-# Your constants (same as in your logic)
 CONF_THRESHOLD = 0.5
 BLUR_DETECTIONS = True
 
@@ -121,7 +120,7 @@ def process_video(input_path, output_path, model):
     print(f"[✓] Done. Output saved to {output_path}")
 
 
-# Optional: convert mp4 to webm
+# convert mp4 to webm
 def convert_to_webm(input_path, output_path):
     subprocess.run([
         "ffmpeg", "-y",
@@ -203,3 +202,27 @@ def disconnect_livestream(request):
         return JsonResponse({"status": "disconnected"})
     else:
         return JsonResponse({"status": "already_closed"})
+
+@csrf_exempt
+def delete_file(request):
+    if request.method == "POST":
+        import json
+        try:
+            data = json.loads(request.body)
+            filename = data.get("filename")
+
+            if not filename:
+                return JsonResponse({"error": "Filename is required"}, status=400)
+
+            file_path = os.path.join(settings.MEDIA_ROOT, "blurred", filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                return JsonResponse({"status": "deleted"})
+            else:
+                return JsonResponse({"error": "File not found"}, status=404)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Only POST allowed"}, status=400)
+

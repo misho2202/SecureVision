@@ -25,6 +25,20 @@ const UploadMediaComponent = () => {
     fileInputRef.current?.click();
   };
 
+  const deleteBlurredFiles = async (files: BlurredMedia[]) => {
+    for (const media of files) {
+      try {
+        await fetch("http://localhost:8000/delete-file/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: media.filename }),
+        });
+      } catch (err) {
+        console.error(`Failed to delete ${media.filename}:`, err);
+      }
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
 
@@ -67,7 +81,6 @@ const UploadMediaComponent = () => {
       console.error("Upload error:", err);
       Swal.fire("Error", "Failed to upload or process files.", "error");
     } finally {
-      // ✅ Reset input so selecting the same file again works
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -124,76 +137,186 @@ const UploadMediaComponent = () => {
         </Button>
       </div>
 
-      {/* Modal to Show Blurred Media */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl w-full flex flex-col items-center">
-          <DialogHeader className="w-full text-center">
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          if (!open && blurredMedia.length > 0) {
+            deleteBlurredFiles(blurredMedia);
+            setBlurredMedia([]);
+          }
+          setIsModalOpen(open);
+        }}
+      >
+        <DialogContent
+          className="max-w-6xl w-full max-h-[90vh] overflow-hidden"
+          style={{ padding: "1.5rem" }}
+        >
+          <DialogHeader className="text-center">
             <DialogTitle>Blurred Media Preview</DialogTitle>
             <DialogDescription>
-              Objects detected have been blurred for privacy.
+              All detected objects are blurred for privacy.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex justify-center items-center w-full">
-            {blurredMedia.length > 0 && (
-              <>
-                {blurredMedia[0].filename.endsWith(".webm") || blurredMedia[0].filename.endsWith(".mp4") ? (
-                  <video
-                    key={blurredMedia[0].url}
-                    controls
-                    className="rounded-lg shadow max-h-[400px] object-contain"
-                  >
-                    <source
-                      src={`http://localhost:8000${blurredMedia[0].url}?t=${Date.now()}`}
-                      type={blurredMedia[0].filename.endsWith(".webm") ? "video/webm" : "video/mp4"}
+          <div
+            className={`w-full ${
+              blurredMedia.length > 2 ? "max-h-[60vh] overflow-y-auto" : ""
+            }`}
+          >
+            <div
+              className={`mt-6 w-full flex flex-wrap justify-center gap-6 ${
+                blurredMedia.length <= 2 ? "items-start" : ""
+              }`}
+            >
+              {blurredMedia.map((media) => (
+                <div
+                  key={media.url}
+                  className={`flex flex-col items-center ${
+                    blurredMedia.length <= 2 ? "w-full max-w-[500px]" : "w-[280px]"
+                  }`}
+                >
+                  {media.filename.endsWith(".webm") ||
+                  media.filename.endsWith(".mp4") ? (
+                    <video
+                      controls
+                      className="rounded-lg shadow max-h-[300px] object-contain w-full"
+                    >
+                      <source
+                        src={`http://localhost:8000${media.url}?t=${Date.now()}`}
+                        type={
+                          media.filename.endsWith(".webm")
+                            ? "video/webm"
+                            : "video/mp4"
+                        }
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <img
+                      src={`http://localhost:8000${media.url}`}
+                      alt={media.filename}
+                      className="rounded-lg shadow max-h-[300px] object-contain cursor-pointer w-full"
+                      onClick={() =>
+                        window.open(
+                          `http://localhost:8000${media.url}`,
+                          "_blank"
+                        )
+                      }
                     />
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
-                  <img
-                    src={`http://localhost:8000${blurredMedia[0].url}`}
-                    alt={blurredMedia[0].filename}
-                    className="rounded-lg shadow max-h-[400px] object-contain cursor-pointer"
-                    onClick={() =>
-                      window.open(`http://localhost:8000${blurredMedia[0].url}`, "_blank")
-                    }
-                  />
-                )}
-              </>
-            )}
+                  )}
+                  <p className="text-sm text-muted-foreground mt-2 truncate max-w-full text-center">
+                    {media.filename}
+                  </p>
+
+                  {/* Only show small download button if more than one media */}
+                  {blurredMedia.length > 1 && (
+                    <Button
+                      size="sm"
+                      className="mt-2 bg-primary text-white hover:bg-primary/90 transition-colors"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(
+                            `http://localhost:8000${media.url}`
+                          );
+                          const blob = await response.blob();
+                          const link = document.createElement("a");
+                          link.href = window.URL.createObjectURL(blob);
+                          link.download = media.filename;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          window.URL.revokeObjectURL(link.href);
+                        } catch (err) {
+                          console.error("Download failed:", err);
+                        }
+                      }}
+                    >
+                      Download
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <DialogFooter className="w-full flex justify-between">
-            <Button
-              variant="secondary"
-              onClick={async () => {
-                try {
-                  const response = await fetch(
-                    `http://localhost:8000${blurredMedia[0].url}`
-                  );
-                  const blob = await response.blob();
+          {blurredMedia.length > 1 && (
+            <DialogFooter className="w-full flex justify-between pt-6">
+              <Button
+                className="bg-primary text-white hover:bg-primary/90 transition-colors"
+                onClick={async () => {
+                  for (const media of blurredMedia) {
+                    try {
+                      const response = await fetch(
+                        `http://localhost:8000${media.url}`
+                      );
+                      const blob = await response.blob();
+                      const link = document.createElement("a");
+                      link.href = window.URL.createObjectURL(blob);
+                      link.download = media.filename;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      window.URL.revokeObjectURL(link.href);
+                    } catch (err) {
+                      console.error(`Download failed for ${media.filename}:`, err);
+                    }
+                  }
+                }}
+              >
+                Download All
+              </Button>
 
-                  const link = document.createElement("a");
-                  link.href = window.URL.createObjectURL(blob);
-                  link.download = blurredMedia[0].filename;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  deleteBlurredFiles(blurredMedia);
+                  setBlurredMedia([]);
+                  setIsModalOpen(false);
+                }}
+              >
+                Close and Delete All
+              </Button>
+            </DialogFooter>
+          )}
 
-                  // Optional: clean up URL object after download
-                  window.URL.revokeObjectURL(link.href);
-                } catch (err) {
-                  console.error("Download failed:", err);
-                }
-              }}
-            >
-              Download
-            </Button>
+          {blurredMedia.length === 1 && (
+            <DialogFooter className="w-full flex justify-end pt-6 gap-4">
+              <Button
+                className="bg-primary text-white hover:bg-primary/90 transition-colors"
+                onClick={async () => {
+                  const media = blurredMedia[0];
+                  try {
+                    const response = await fetch(
+                      `http://localhost:8000${media.url}`
+                    );
+                    const blob = await response.blob();
+                    const link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = media.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(link.href);
+                  } catch (err) {
+                    console.error("Download failed:", err);
+                  }
+                }}
+              >
+                Download
+              </Button>
 
-            <Button variant="destructive" onClick={() => setIsModalOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  deleteBlurredFiles(blurredMedia);
+                  setBlurredMedia([]);
+                  setIsModalOpen(false);
+                }}
+              >
+                Close and Delete
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     </>
