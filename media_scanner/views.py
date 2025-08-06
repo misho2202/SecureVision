@@ -22,7 +22,6 @@ print(f"[INFO] Loading YOLO model on: {DEVICE.upper()}")
 model_path = os.path.join(settings.BASE_DIR, "best.pt")
 model = YOLO(model_path).to(DEVICE)
 
-
 CONF_THRESHOLD = 0.5
 BLUR_DETECTIONS = True
 
@@ -203,7 +202,6 @@ def disconnect_livestream(request):
         return JsonResponse({"status": "disconnected"})
     else:
         return JsonResponse({"status": "already_closed"})
-
 
 @csrf_exempt
 def delete_file(request):
