@@ -172,7 +172,9 @@ const UploadMediaComponent = () => {
                 <div
                   key={media.url}
                   className={`flex flex-col items-center ${
-                    blurredMedia.length <= 2 ? "w-full max-w-[500px]" : "w-[280px]"
+                    blurredMedia.length <= 2
+                      ? "w-full max-w-[500px]"
+                      : "w-[280px]"
                   }`}
                 >
                   {media.filename.endsWith(".webm") ||
@@ -182,7 +184,9 @@ const UploadMediaComponent = () => {
                       className="rounded-lg shadow max-h-[300px] object-contain w-full"
                     >
                       <source
-                        src={`http://localhost:8000${media.url}?t=${Date.now()}`}
+                        src={`http://localhost:8000${
+                          media.url
+                        }?t=${Date.now()}`}
                         type={
                           media.filename.endsWith(".webm")
                             ? "video/webm"
@@ -258,7 +262,10 @@ const UploadMediaComponent = () => {
                       document.body.removeChild(link);
                       window.URL.revokeObjectURL(link.href);
                     } catch (err) {
-                      console.error(`Download failed for ${media.filename}:`, err);
+                      console.error(
+                        `Download failed for ${media.filename}:`,
+                        err
+                      );
                     }
                   }
                 }}
